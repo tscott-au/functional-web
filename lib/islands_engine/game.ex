@@ -7,11 +7,13 @@
 # Visit http://www.pragmaticprogrammer.com/titles/lhelph for more book information.
 #---
 defmodule IslandsEngine.Game do
-  use GenServer
+  use GenServer, start: {__MODULE__, :start_link, []}, restart: :transient
 
   alias IslandsEngine.{Board, Coordinate, Guesses, Island, Rules}
 
   @players [:player1, :player2]
+
+
 
   def start_link(name) when is_binary(name), do:
     GenServer.start_link(__MODULE__, name, name: via_tuple(name))
@@ -20,6 +22,11 @@ defmodule IslandsEngine.Game do
     player1 = %{name: name, board: Board.new(), guesses: Guesses.new()}
     player2 = %{name: nil,  board: Board.new(), guesses: Guesses.new()}
     {:ok, %{player1: player1, player2: player2, rules: %Rules{}}}
+    |> with_timeout
+  end
+
+  def handle_info(:timeout, state) do
+    {:stop, {:shutdown, :timeout}, state}
   end
 
   def add_player(game, name) when is_binary(name), do:
@@ -46,6 +53,7 @@ defmodule IslandsEngine.Game do
       :error -> {:reply, :error, state_data}
       {:error, _msg} -> {:reply, :error, state_data}
     end
+    |> with_timeout
   end
 
   def handle_call({:position_island, player, key, row, col}, _from, state_data)
@@ -72,6 +80,7 @@ defmodule IslandsEngine.Game do
         {:reply, {:error, :invalid_island_type}, state_data}
       {:error, msg} -> {:reply, {:error, msg}, state_data}
     end
+    |> with_timeout
   end
 
   def handle_call({:set_islands, player}, _from, state) do
@@ -87,6 +96,7 @@ defmodule IslandsEngine.Game do
       false -> {:reply, :not_all_islands_positioned, state}
       {:error, _msg} -> {:reply, :error, state}
     end
+    |> with_timeout
   end
 
   def handle_call({:guess_coordinate, player, row, col}, _from, state) do
@@ -110,6 +120,7 @@ defmodule IslandsEngine.Game do
 
       {:error, _msg} -> {:reply, :error, state}
     end
+    |> with_timeout
   end
 
   def via_tuple(name), do: {:via, Registry, {Registry.Game, name}}
@@ -131,6 +142,7 @@ defmodule IslandsEngine.Game do
 
 
   defp reply_success(state_data, reply), do: {:reply, reply, state_data}
+  def with_timeout(reply), do: reply |> Tuple.append(Application.get_env(:islands_engine, :timeout))
 
   defp player_board(state_data, player), do: Map.get(state_data, player).board
 

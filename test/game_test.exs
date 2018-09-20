@@ -18,6 +18,11 @@ defmodule GameTest do
 
   end
 
+  @tag :wip
+  test "timeout" do
+    {result} = Game.with_timeout({})
+    assert result >= 10000
+  end
 
   test "position a island" do
     {:ok, game } = Game.start_link("fred")
@@ -135,13 +140,15 @@ defmodule GameTest do
 
   test "registry" do
     name = "barny-" <> Integer.to_string(:os.system_time(:millisecond))
-    new_game(name)
+    {:ok, _game } = Game.start_link(name)
     via = Game.via_tuple(name)
     state = :sys.get_state(via)
     assert state.player1.name == name
+
+    ok = Game.add_player(via, "betty")
+    assert ok == :ok
+
   end
-
-
 
   defp new_game(name \\ "fred") do
     {:ok, game } = Game.start_link(name)

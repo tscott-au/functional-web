@@ -21,6 +21,11 @@ use Mix.Config
 #     config :logger, level: :info
 #
 
+config :islands_engine,
+  timeout: String.to_integer(System.get_env("GAME_TIMEOUT") || "3600") * 1000
+
+
+
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment
 # by uncommenting the line below and defining dev.exs, test.exs and such.
@@ -28,3 +33,4 @@ use Mix.Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env}.exs"
+
