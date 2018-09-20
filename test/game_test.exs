@@ -131,14 +131,20 @@ defmodule GameTest do
 
     {_hit_mis, _island, win} = Game.guess_coordinate(game, :player1, row, col)
     assert win == :win
+  end
 
-
+  test "registry" do
+    name = "barny-" <> Integer.to_string(:os.system_time(:millisecond))
+    new_game(name)
+    via = Game.via_tuple(name)
+    state = :sys.get_state(via)
+    assert state.player1.name == name
   end
 
 
 
-  defp new_game() do
-    {:ok, game } = Game.start_link("fred")
+  defp new_game(name \\ "fred") do
+    {:ok, game } = Game.start_link(name)
     error = Game.add_player(game, "betty")
     assert error == :ok
     game
