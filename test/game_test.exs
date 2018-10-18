@@ -18,12 +18,6 @@ defmodule GameTest do
 
   end
 
-  @tag :wip
-  test "timeout" do
-    {result} = Game.with_timeout({})
-    assert result >= 10000
-  end
-
   test "position a island" do
     {:ok, game } = Game.start_link("fred")
     Game.add_player(game, "betty")
